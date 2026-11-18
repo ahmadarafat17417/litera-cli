@@ -1,74 +1,15 @@
-import sqlite3
+from database import init_db
+import auth
+import buku
+import diary
 
-def get_connection():
-    # connect ke database sqlite
-    conn = sqlite3.connect('database.db')
-    # biar hasil query bisa diakses pakai nama kolom (kayak dict)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-def init_db():
-    # bikin tabel kalau belum ada
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    # tabel user
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            role TEXT NOT NULL  -- 'Pembaca' atau 'Penulis'
-        )
-    ''')
-
-    # tabel katalog buku
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS books (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            judul TEXT NOT NULL,
-            genre TEXT NOT NULL,
-            sinopsis TEXT,
-            id_penulis INTEGER NOT NULL,
-            FOREIGN KEY (id_penulis) REFERENCES users (id)
-        )
-    ''')
-
-    # tabel diary / catatan bacaan
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS diaries (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_user INTEGER NOT NULL,
-            id_buku INTEGER NOT NULL,
-            tanggal_baca TEXT NOT NULL,
-            status_read TEXT NOT NULL, -- 'First Time' atau 'Re-read'
-            FOREIGN KEY (id_user) REFERENCES users (id),
-            FOREIGN KEY (id_buku) REFERENCES books (id)
-        )
-    ''')
-
-    # tabel ulasan & rating
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS reviews (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_user INTEGER NOT NULL,
-            id_buku INTEGER NOT NULL,
-            rating INTEGER NOT NULL,  -- 1 sampai 5
-            isi_ulasan TEXT,
-            tanggal_ulasan TEXT NOT NULL,
-            FOREIGN KEY (id_user) REFERENCES users (id),
-            FOREIGN KEY (id_buku) REFERENCES books (id)
-        )
-    ''')
-
-    conn.commit()
-    conn.close()
-
-# nyimpen data user yang lagi login
+# Menyimpan data user yang sedang login
 current_user = None
 
 def menu_utama():
-    # menu awal sebelum login
+    """Tampilan menu awal sebelum pengguna login"""
+    global current_user
+    
     while True:
         print("\n=================================")
         print("    SELAMAT DATANG DI LITERA     ")
@@ -81,10 +22,12 @@ def menu_utama():
         pilihan = input("Pilih menu (1-3): ").strip()
         
         if pilihan == '1':
-            print("\n[Fitur Register akan dipanggil di Langkah 3]")
+            auth.register()
         elif pilihan == '2':
-            print("\n[Fitur Login akan dipanggil di Langkah 3]")
-            # nanti kalau login sukses, panggil menu_setelah_login()
+            user = auth.login()
+            if user is not None:
+                current_user = user
+                menu_setelah_login()
         elif pilihan == '3':
             print("\nTerima kasih telah menggunakan Litera. Sampai jumpa!")
             break
@@ -92,7 +35,7 @@ def menu_utama():
             print("\nPilihan tidak valid! Silakan masukkan angka 1, 2, atau 3.")
 
 def menu_setelah_login():
-    # menu utama setelah login, beda-beda tergantung role
+    """Tampilan menu setelah login (dibedakan berdasarkan Role)"""
     global current_user
     
     while current_user is not None:
@@ -101,7 +44,7 @@ def menu_setelah_login():
         print(f" Peran: {current_user['role']}")
         print("=================================")
         
-        # menu buat penulis
+        # Menu Khusus Penulis
         if current_user['role'] == 'Penulis':
             print("1. Tambah Buku Baru (Create)")
             print("2. Lihat Buku Saya (Read)")
@@ -111,14 +54,23 @@ def menu_setelah_login():
             print("=================================")
             
             pilihan = input("Pilih menu (1-5): ").strip()
-            if pilihan == '5':
+            
+            if pilihan == '1':
+                buku.tambah_buku(current_user['id'])
+            elif pilihan == '2':
+                buku.lihat_buku_saya(current_user['id'])
+            elif pilihan == '3':
+                buku.edit_buku(current_user['id'])
+            elif pilihan == '4':
+                buku.hapus_buku(current_user['id'])
+            elif pilihan == '5':
                 current_user = None
                 print("\nBerhasil logout!")
                 break
             else:
-                print(f"\n[Fitur Penulis menu {pilihan} akan diisi di Langkah 5]")
+                print("\nPilihan tidak valid!")
 
-        # menu buat pembaca
+        # Menu Khusus Pembaca
         elif current_user['role'] == 'Pembaca':
             print("1. Lihat & Cari Katalog Buku (Read)")
             print("2. Isi Catatan Diary Bacaan (Create)")
@@ -128,12 +80,21 @@ def menu_setelah_login():
             print("=================================")
             
             pilihan = input("Pilih menu (1-5): ").strip()
-            if pilihan == '5':
+            
+            if pilihan == '1':
+                buku.lihat_dan_cari_katalog()
+            elif pilihan == '2':
+                diary.isi_diary(current_user['id'])
+            elif pilihan == '3':
+                diary.lihat_diary(current_user['id'])
+            elif pilihan == '4':
+                diary.beri_ulasan(current_user['id'])
+            elif pilihan == '5':
                 current_user = None
                 print("\nBerhasil logout!")
                 break
             else:
-                print(f"\n[Fitur Pembaca menu {pilihan} akan diisi di Langkah 5]")
+                print("\nPilihan tidak valid!")
 
 if __name__ == '__main__':
     init_db()
