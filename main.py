@@ -3,7 +3,6 @@ import auth
 import buku
 import diary
 
-# Menyimpan data user yang sedang login
 current_user = None
 
 def menu_utama():
@@ -44,16 +43,17 @@ def menu_setelah_login():
         print(f" Peran: {current_user['role']}")
         print("=================================")
         
-        # Menu Khusus Penulis
+        # Menu Khusus Penulis (6 Opsi)
         if current_user['role'] == 'Penulis':
             print("1. Tambah Buku Baru (Create)")
             print("2. Lihat Buku Saya (Read)")
             print("3. Edit Data Buku (Update)")
             print("4. Hapus Buku (Delete)")
-            print("5. Logout")
+            print("5. Lihat Profil Saya")
+            print("6. Logout")
             print("=================================")
             
-            pilihan = input("Pilih menu (1-5): ").strip()
+            pilihan = input("Pilih menu (1-6): ").strip()
             
             if pilihan == '1':
                 buku.tambah_buku(current_user['id'])
@@ -64,32 +64,31 @@ def menu_setelah_login():
             elif pilihan == '4':
                 buku.hapus_buku(current_user['id'])
             elif pilihan == '5':
+                auth.lihat_profil(current_user['id'])
+            elif pilihan == '6':
                 current_user = None
                 print("\nBerhasil logout!")
                 break
             else:
                 print("\nPilihan tidak valid!")
 
-        # Menu Khusus Pembaca
+        # Menu Khusus Pembaca (4 Opsi)
         elif current_user['role'] == 'Pembaca':
-            print("1. Lihat & Cari Katalog Buku (Read)")
-            print("2. Isi Catatan Diary Bacaan (Create)")
-            print("3. Lihat Riwayat Diary Saya (Read)")
-            print("4. Beri Ulasan & Rating Buku (Create)")
-            print("5. Logout")
+            print("1. Lihat & Cari Katalog Buku")
+            print("2. Riwayat Diary Bacaan Saya")
+            print("3. Lihat Profil Saya")
+            print("4. Logout")
             print("=================================")
             
-            pilihan = input("Pilih menu (1-5): ").strip()
+            pilihan = input("Pilih menu (1-4): ").strip()
             
             if pilihan == '1':
-                buku.lihat_dan_cari_katalog()
+                buku.katalog_buku(current_user['id'])
             elif pilihan == '2':
-                diary.isi_diary(current_user['id'])
-            elif pilihan == '3':
                 diary.lihat_diary(current_user['id'])
+            elif pilihan == '3':
+                auth.lihat_profil(current_user['id'])
             elif pilihan == '4':
-                diary.beri_ulasan(current_user['id'])
-            elif pilihan == '5':
                 current_user = None
                 print("\nBerhasil logout!")
                 break
