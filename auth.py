@@ -1,6 +1,3 @@
-def register():
-    print("\n[Fitur Register - akan diisi di Langkah 3]")
-
-def login():
-    print("\n[Fitur Login - akan diisi di Langkah 3]")
-    return None
+def register(): pass
+def login(): return None
+def lihat_profil(user_id): pass

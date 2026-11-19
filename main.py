@@ -1,5 +1,7 @@
 from database import init_db
 import auth
+import admin
+import penulis
 import buku
 import diary
 
@@ -34,7 +36,7 @@ def menu_utama():
             print("\nPilihan tidak valid! Silakan masukkan angka 1, 2, atau 3.")
 
 def menu_setelah_login():
-    """Tampilan menu setelah login (dibedakan berdasarkan Role)"""
+    """Tampilan menu setelah login (Admin, Penulis, Pembaca)"""
     global current_user
     
     while current_user is not None:
@@ -43,12 +45,35 @@ def menu_setelah_login():
         print(f" Peran: {current_user['role']}")
         print("=================================")
         
-        # Menu Khusus Penulis (6 Opsi)
-        if current_user['role'] == 'Penulis':
-            print("1. Tambah Buku Baru (Create)")
-            print("2. Lihat Buku Saya (Read)")
-            print("3. Edit Data Buku (Update)")
-            print("4. Hapus Buku (Delete)")
+        # 1. MENU KHUSUS ADMIN
+        if current_user['role'] == 'Admin':
+            print("1. Manajemen User")
+            print("2. Manajemen Buku")
+            print("3. Manajemen Kategori")
+            print("4. Logout")
+            print("=================================")
+            
+            pilihan = input("Pilih menu (1-4): ").strip()
+            
+            if pilihan == '1':
+                admin.manajemen_user()
+            elif pilihan == '2':
+                admin.manajemen_buku()
+            elif pilihan == '3':
+                admin.manajemen_kategori()
+            elif pilihan == '4':
+                current_user = None
+                print("\nBerhasil logout!")
+                break
+            else:
+                print("\nPilihan tidak valid!")
+
+        # 2. MENU KHUSUS PENULIS
+        elif current_user['role'] == 'Penulis':
+            print("1. Tambah Buku Baru")
+            print("2. Lihat Buku Saya")
+            print("3. Edit Data Buku")
+            print("4. Hapus Buku")
             print("5. Lihat Profil Saya")
             print("6. Logout")
             print("=================================")
@@ -56,13 +81,13 @@ def menu_setelah_login():
             pilihan = input("Pilih menu (1-6): ").strip()
             
             if pilihan == '1':
-                buku.tambah_buku(current_user['id'])
+                penulis.tambah_buku(current_user['id'])
             elif pilihan == '2':
-                buku.lihat_buku_saya(current_user['id'])
+                penulis.lihat_buku_saya(current_user['id'])
             elif pilihan == '3':
-                buku.edit_buku(current_user['id'])
+                penulis.edit_buku(current_user['id'])
             elif pilihan == '4':
-                buku.hapus_buku(current_user['id'])
+                penulis.hapus_buku(current_user['id'])
             elif pilihan == '5':
                 auth.lihat_profil(current_user['id'])
             elif pilihan == '6':
@@ -72,10 +97,10 @@ def menu_setelah_login():
             else:
                 print("\nPilihan tidak valid!")
 
-        # Menu Khusus Pembaca (4 Opsi)
+        # 3. MENU KHUSUS PEMBACA
         elif current_user['role'] == 'Pembaca':
-            print("1. Lihat & Cari Katalog Buku")
-            print("2. Riwayat Diary Bacaan Saya")
+            print("1. Discover & Cari Buku")
+            print("2. Riwayat Diary & Ulasan Saya")
             print("3. Lihat Profil Saya")
             print("4. Logout")
             print("=================================")
@@ -83,7 +108,7 @@ def menu_setelah_login():
             pilihan = input("Pilih menu (1-4): ").strip()
             
             if pilihan == '1':
-                buku.katalog_buku(current_user['id'])
+                buku.discover_buku(current_user['id'])
             elif pilihan == '2':
                 diary.lihat_diary(current_user['id'])
             elif pilihan == '3':
