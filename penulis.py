@@ -18,3 +18,9 @@ def _ambil_buku_penulis(cursor, user_id):
         ORDER BY b.id
     ''', (user_id,))
     return cursor.fetchall()
+
+def _tampilkan_daftar_ringkas(daftar_buku):
+    # list singkat buat menu edit sama hapus
+    for b in daftar_buku:
+        print(f"  [{b['id']}] {b['judul']}  ({b['nama_kategori']})")
+
